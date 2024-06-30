@@ -3,7 +3,6 @@ import os
 import subprocess
 import argparse
 import numpy as np
-import os
 
 def ensure_path_exists(path):
     if not os.path.exists(path):
