@@ -1,0 +1,129 @@
+version: '3'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    hostname: zookeeper
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  broker:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: broker
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092,PLAINTEXT_INTERNAL://broker:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+  app1:
+    container_name: consumer_1
+    build:
+      context: .
+      dockerfile: nodes/C1/Dockerfile
+    command: dotnet run
+    depends_on:
+      - broker
+      - manager
+    environment:
+      - Consumer:Host=broker
+      - Consumer:Port=9092
+
+  app2:
+    container_name: consumer_2
+    build:
+      context: .
+      dockerfile: nodes/C2/Dockerfile
+    command: dotnet run
+    depends_on:
+      - broker
+      - manager
+    environment:
+      - Consumer:Host=broker
+      - Consumer:Port=9092
+
+  app3:
+    container_name: consumer_3
+    build:
+      context: .
+      dockerfile: nodes/C3/Dockerfile
+    command: dotnet run
+    depends_on:
+      - broker
+      - manager
+    environment:
+      - Consumer:Host=broker
+      - Consumer:Port=9092
+
+  app4:
+    container_name: consumer_4
+    build:
+      context: .
+      dockerfile: nodes/C4/Dockerfile
+    command: dotnet run
+    depends_on:
+      - broker
+      - manager
+    environment:
+      - Consumer:Host=broker
+      - Consumer:Port=9092
+
+  manager:
+    container_name: manager
+    build: 
+      context: .
+      dockerfile: nodes/M/Dockerfile
+    command: dotnet run
+    depends_on:
+      - broker
+    environment:
+      - Consumer:Host=broker
+      - Consumer:Port=9092
+
+  workload1:
+    container_name: producer_1
+    build:
+      context: .
+      dockerfile: nodes/P1/Dockerfile
+    command: dotnet run
+    depends_on:
+      - manager
+      - broker
+    environment:
+      - Producer:Host=broker
+      - Producer:Port=9092
+
+  workload2:
+    container_name: producer_2
+    build:
+      context: .
+      dockerfile: nodes/P2/Dockerfile
+    command: dotnet run
+    depends_on:
+      - manager
+      - broker
+    environment:
+      - Producer:Host=broker
+      - Producer:Port=9092
+
+  workload3:
+    container_name: producer_3
+    build:
+      context: .
+      dockerfile: nodes/P3/Dockerfile
+    command: dotnet run
+    depends_on:
+      - manager
+      - broker
+    environment:
+      - Producer:Host=broker
+      - Producer:Port=9092
