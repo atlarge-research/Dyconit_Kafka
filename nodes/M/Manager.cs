@@ -26,6 +26,7 @@ class Manager
     private static Dictionary<string, bool> _isTopicActive = new Dictionary<string, bool>();
     private static Dictionary<int, bool> _consumerReqNewBounds = new Dictionary<int, bool>();
     private static Dictionary<string, HashSet<int>> _topicProducers = new Dictionary<string, HashSet<int>>();
+    private static Dictionary<string, HashSet<int>> _topicConsumers = new Dictionary<string, HashSet<int>>();
     private static Process _currentProcess;
     static HashSet<int> _consumers = new HashSet<int>();
     static Dictionary<int, Dictionary<string, int>> _consumerConsumeCount = new Dictionary<int, Dictionary<string, int>>();
@@ -149,6 +150,7 @@ class Manager
                 _updateTimeStampPerTopic.Add(proTopic, 0);
                 _isTopicActive.Add(proTopic, true);
                 _topicProducers.Add(proTopic, new HashSet<int>());
+                _topicConsumers.Add(proTopic, new HashSet<int>());
             }
             _topicProducers[proTopic].Add(proId);
 
@@ -175,7 +177,7 @@ class Manager
             if (percentageIncrease < 1 - _notifyConsumersThreshold || percentageIncrease > 1 + _notifyConsumersThreshold)
             {
                 Log.Information($"notifying consumers");
-                NotifyConsumers();
+                NotifyConsumers(proTopic);
             }
         }
         else
@@ -184,9 +186,9 @@ class Manager
         }
     }
 
-    static void NotifyConsumers()
+    static void NotifyConsumers(string topic)
     {
-        foreach (var consumer in _consumers)
+        foreach (var consumer in _topicConsumers[topic])
         {
             RunPerfCheck(consumer, GenerateUpdates);
         }
@@ -276,6 +278,7 @@ class Manager
                     _msgProdRatePerTopic.Add(report[i], 0);
                     _updateTimeStampPerTopic.Add(report[i], 0);
                     _isTopicActive.Add(report[i], false);
+                    _topicConsumers.Add(report[i], new HashSet<int>());
                 }
                 _consumerConsumeCount[consumerId][report[i]] = cc;
             }
