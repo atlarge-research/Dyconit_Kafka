@@ -23,6 +23,7 @@ class Producer
     private static int _speedupStepSize;
     private static int _throttleMinDelay = 0;
     private static double _throttleTime = 0;
+    private static int _reportRate;
     private static Random _random = new Random();
     static async Task Main(string[] args)
     {
@@ -33,7 +34,7 @@ class Producer
         var producerTasks = new List<Task>
         {
             Task.Run(() => SendMessages(600, ctsToken)),
-            Task.Run(() => ReportPerformance(5000)),
+            Task.Run(() => ReportPerformance(_reportRate)),
             Task.Run(() => DetermineDelay(1000)),
             Task.Run(() => ConsumeUpdates(ctsToken))
         };
@@ -223,6 +224,7 @@ class Producer
         _id = config.GetValue<int>("ProducerSettigns:id");
         _topic = config.GetValue<string>("ProducerSettigns:topic");
         _runtime = config.GetValue<int>("ProducerSettigns:runtime");
+        _reportRate = config.GetValue<int>("ProducerSettigns:report_rate");
 
         _MaxDelay = config.GetValue<int>("Dyconits:max_delay");
         _MinDelay = config.GetValue<int>("Dyconits:min_delay");
